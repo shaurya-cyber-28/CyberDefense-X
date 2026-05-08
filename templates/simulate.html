@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberDefense-X | Live SOC Simulation</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="simx-page">
+
+    <aside class="simx-sidebar">
+        <h2>🛡 CyberDefense-X</h2>
+        <p>SOC COMMAND CENTER</p>
+
+        <nav>
+            <span class="active">Live Simulation <b>● LIVE</b></span>
+            <span>Packet Flow</span>
+            <span>Threat Logs</span>
+            <span>Report Engine</span>
+            <span>Attack Analytics</span>
+            <span>System Settings</span>
+        </nav>
+
+        <div class="simx-alert">
+            <h3>⚠ ATTACK ACTIVE</h3>
+            <p>{{ attack.name }}</p>
+            <strong>{{ attack.risk }} Severity</strong>
+        </div>
+
+        <div class="simx-small-card">
+            <div><span>System Time</span><strong id="systemTime">--:--:--</strong></div>
+            <div><span>Simulation ID</span><strong>SIM-2026-04-001</strong></div>
+            <div><span>Uptime</span><strong>02:15:42</strong></div>
+        </div>
+    </aside>
+
+    <main class="simx-main">
+
+        <section class="simx-kpis">
+            <div class="simx-kpi red">
+                <span>Threat Score</span>
+                <h2>{{ attack.score }}<small>/100</small></h2>
+                <div class="simx-wave"></div>
+            </div>
+
+            <div class="simx-kpi cyan">
+                <span>Packets / Sec</span>
+                <h2 id="pps">0</h2>
+                <div class="simx-wave"></div>
+            </div>
+
+            <div class="simx-kpi orange">
+                <span>Compromised Nodes</span>
+                <h2><span id="compromisedCount">0</span><small>/6</small></h2>
+                <div class="simx-wave"></div>
+            </div>
+
+            <div class="simx-kpi magenta">
+                <span>Data Exfiltrated</span>
+                <h2 id="dataExfil">0.00<small>GB</small></h2>
+                <div class="simx-wave"></div>
+            </div>
+
+            <div class="simx-kpi green">
+                <span>AI Confidence</span>
+                <h2 id="aiConfidence">0%</h2>
+                <div class="simx-wave"></div>
+            </div>
+        </section>
+
+        <section class="simx-layout">
+
+            <div class="simx-center">
+
+                <div class="simx-map-panel">
+                    <div class="simx-panel-title">
+                        <h3>NETWORK ATTACK VISUALIZATION</h3>
+                        <span id="simStatus">RUNNING</span>
+                    </div>
+
+                    <div class="simx-map">
+
+                        <div class="world-overlay"></div>
+
+                        <svg class="connection-svg" viewBox="0 0 1000 590" preserveAspectRatio="none">
+
+                            <line class="svg-line malicious" x1="135" y1="285" x2="315" y2="285" />
+
+                            <line class="svg-line stressed" x1="375" y1="285" x2="650" y2="195" />
+
+                            <line class="svg-line normal" x1="415" y1="150" x2="350" y2="265" />
+
+                            <line class="svg-line normal" x1="375" y1="335" x2="610" y2="445" />
+
+                            <line class="svg-line normal" x1="255" y1="455" x2="600" y2="435" />
+
+                            <line class="svg-line malicious" x1="705" y1="235" x2="835" y2="305" />
+
+                            <line class="svg-line malicious" x1="700" y1="430" x2="835" y2="340" />
+
+                        </svg>
+
+                        <div class="attack-packet packet-a"></div>
+                        <div class="attack-packet packet-b"></div>
+                        <div class="attack-packet packet-c"></div>
+                        <div class="attack-packet packet-d"></div>
+                        <div class="attack-packet packet-e"></div>
+                        <div class="attack-packet packet-f"></div>
+                        <div class="attack-packet packet-g"></div>
+
+                        <div class="sim-node attacker-node" id="attacker">
+                            <div class="icon">☠</div>
+                            <h4>ATTACKER</h4>
+                            <p>45.77.32.11</p>
+                        </div>
+
+                        <div class="sim-node firewall-node" id="firewall">
+                            <div class="icon">▦</div>
+                            <h4>FIREWALL</h4>
+                            <p>192.168.1.1</p>
+                        </div>
+
+                        <div class="sim-node admin-node" id="admin">
+                            <div class="icon">🖥</div>
+                            <h4>ADMIN PC</h4>
+                            <p>192.168.1.10</p>
+                        </div>
+
+                        <div class="sim-node server-node" id="server">
+                            <div class="icon">▤</div>
+                            <h4>WEB SERVER</h4>
+                            <p>192.168.1.20</p>
+                            <span class="risk-bubble">3</span>
+                        </div>
+
+                        <div class="sim-node database-node" id="database">
+                            <div class="icon">◉</div>
+                            <h4>DATABASE</h4>
+                            <p>192.168.1.30</p>
+                            <span class="risk-bubble">2</span>
+                        </div>
+
+                        <div class="sim-node client-node" id="client">
+                            <div class="icon">💻</div>
+                            <h4>CLIENT</h4>
+                            <p>192.168.1.50</p>
+                            <span class="risk-bubble">1</span>
+                        </div>
+
+                        <div class="sim-node internet-node" id="internet">
+                            <div class="icon">◎</div>
+                            <h4>INTERNET</h4>
+                            <p>8.8.8.8</p>
+                        </div>
+
+                        <div class="map-legend-box">
+                            <p><span class="legend-cyan"></span> Normal Traffic</p>
+                            <p><span class="legend-red"></span> Malicious Traffic</p>
+                            <p><span class="legend-orange"></span> Stressed Connection</p>
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="kill-chain-panel">
+                    <h3>ATTACK KILL CHAIN</h3>
+
+                    <div class="kill-chain">
+                        <div class="kill-step done">✓<span>Reconnaissance</span></div>
+                        <div class="kill-step done">✓<span>Initial Access</span></div>
+                        <div class="kill-step active">♙<span>Credential Theft</span></div>
+                        <div class="kill-step danger">☠<span>Lateral Movement</span></div>
+                        <div class="kill-step pending">▣<span>Data Exfiltration</span></div>
+                        <div class="kill-step pending">⚙<span>Impact</span></div>
+                    </div>
+                </div>
+
+            </div>
+
+            <aside class="simx-right">
+
+                <div class="simx-card logs-card">
+                    <div class="simx-panel-title">
+                        <h3>LIVE ATTACK LOGS</h3>
+                        <span>REAL-TIME</span>
+                    </div>
+
+                    <div id="liveLogs" class="simx-log-box"></div>
+                </div>
+
+                <div class="simx-card">
+                    <h3>ATTACK PROGRESS</h3>
+                    <div class="progress-track">
+                        <div id="attackProgress" class="progress-bar"></div>
+                    </div>
+                    <p><span id="progressText">Initializing simulation...</span><strong id="progressPercent">0%</strong></p>
+                </div>
+
+                <div class="simx-card">
+                    <h3>DETECTION ENGINE STATUS</h3>
+
+                    <div class="engine-row">
+                        <span>IDS</span>
+                        <strong class="green-text">ONLINE</strong>
+                    </div>
+
+                    <div class="engine-row">
+                        <span>Firewall</span>
+                        <strong class="orange-text">UNDER LOAD</strong>
+                    </div>
+
+                    <div class="engine-row">
+                        <span>AI Engine</span>
+                        <strong class="cyan-text">ANALYZING</strong>
+                    </div>
+
+                    <div class="engine-row">
+                        <span>Threat Intelligence</span>
+                        <strong class="green-text">UPDATED</strong>
+                    </div>
+                </div>
+
+                <button onclick="goToReport('{{ attack_key }}')">Generate SOC Report</button>
+
+            </aside>
+
+        </section>
+
+    </main>
+
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+
+<script>
+const attackType = "{{ attack_key }}";
+
+const attackSteps = {
+    ddos: [
+        ["DDoS attack simulation started", "red", "attacker"],
+        ["Botnet traffic targeting firewall", "orange", "firewall"],
+        ["Packet rate exceeds normal threshold", "orange", "firewall"],
+        ["Web server overloaded by requests", "red", "server"],
+        ["Service response time degraded", "red", "server"],
+        ["Traffic shaping rule deployed", "cyan", "firewall"],
+        ["Malicious sources rate-limited", "green", "internet"],
+        ["DDoS simulation completed successfully", "green", "server"]
+    ],
+    malware: [
+        ["Malware injection simulation started", "red", "attacker"],
+        ["Suspicious payload delivered to client", "orange", "client"],
+        ["Endpoint anomaly detected", "orange", "client"],
+        ["Privilege escalation attempt observed", "red", "admin"],
+        ["Lateral movement toward server", "red", "server"],
+        ["Database access attempt blocked", "red", "database"],
+        ["AI engine confirms malware behavior", "cyan", "server"],
+        ["Infected endpoint isolated successfully", "green", "client"]
+    ],
+    phishing: [
+        ["Phishing simulation started", "red", "attacker"],
+        ["Fake login page delivered to user", "orange", "client"],
+        ["Credential submission detected", "red", "client"],
+        ["Suspicious login attempt observed", "red", "admin"],
+        ["Account risk score increased", "orange", "admin"],
+        ["Session token abuse attempt blocked", "red", "server"],
+        ["AI confirms credential compromise", "cyan", "server"],
+        ["User session revoked successfully", "green", "client"]
+    ],
+    mitm: [
+        ["MITM attack simulation started", "red", "attacker"],
+        ["Attacker positioned between client and server", "red", "firewall"],
+        ["Intercepting communication channel", "orange", "server"],
+        ["Session packets captured", "orange", "client"],
+        ["TLS downgrade attempt detected", "red", "server"],
+        ["Credential interception in progress", "red", "database"],
+        ["Firewall raises interception alert", "orange", "firewall"],
+        ["Communication channel secured", "green", "client"]
+    ]
+};
+
+let index = 0;
+let compromised = 0;
+let packetSpeed = 680;
+let dataValue = 0;
+let ai = 80;
+
+function updateClock() {
+    document.getElementById("systemTime").innerText = new Date().toLocaleTimeString();
+}
+
+setInterval(updateClock, 1000);
+updateClock();
+
+function addLog(message, type) {
+    const logBox = document.getElementById("liveLogs");
+    const div = document.createElement("div");
+    div.className = "simx-log " + type;
+
+    div.innerHTML = `
+        <span>${new Date().toLocaleTimeString()}</span>
+        <p>${message}</p>
+    `;
+
+    logBox.prepend(div);
+}
+
+function activateNode(nodeId, type) {
+    document.querySelectorAll(".sim-node").forEach(node => {
+        node.classList.remove("node-active", "node-danger", "node-safe");
+    });
+
+    const node = document.getElementById(nodeId);
+
+    if (!node) return;
+
+    if (type === "green") {
+        node.classList.add("node-safe");
+    } else if (type === "red") {
+        node.classList.add("node-danger");
+    } else {
+        node.classList.add("node-active");
+    }
+}
+
+function markCompromised(nodeId) {
+    const node = document.getElementById(nodeId);
+
+    if (node && !node.classList.contains("node-compromised")) {
+        node.classList.add("node-compromised");
+        compromised++;
+        document.getElementById("compromisedCount").innerText = compromised;
+    }
+}
+
+function updateMetrics() {
+    packetSpeed += Math.floor(Math.random() * 450) + 120;
+    dataValue += Math.random() * 0.28;
+    ai += Math.random() * 2.2;
+
+    document.getElementById("pps").innerText = packetSpeed.toLocaleString();
+    document.getElementById("dataExfil").innerHTML = dataValue.toFixed(2) + "<small>GB</small>";
+    document.getElementById("aiConfidence").innerText = Math.min(ai, 98.9).toFixed(1) + "%";
+}
+
+function updateProgress(totalSteps) {
+    const percent = Math.round(((index + 1) / totalSteps) * 100);
+
+    document.getElementById("attackProgress").style.width = percent + "%";
+    document.getElementById("progressPercent").innerText = percent + "%";
+    document.getElementById("progressText").innerText =
+        percent === 100 ? "Simulation completed successfully" : "Simulation running...";
+}
+
+function runSimulation() {
+    const steps = attackSteps[attackType] || attackSteps.ddos;
+
+    if (index >= steps.length) {
+        addLog("SOC report is ready. Click Generate SOC Report.", "green");
+        document.getElementById("simStatus").innerText = "COMPLETE";
+        return;
+    }
+
+    const [message, type, node] = steps[index];
+
+    addLog(message, type);
+    activateNode(node, type);
+    updateMetrics();
+    updateProgress(steps.length);
+
+    if (index === 2) markCompromised("client");
+    if (index === 4) markCompromised("server");
+    if (index === 5) markCompromised("database");
+
+    index++;
+    setTimeout(runSimulation, 1300);
+}
+
+addLog("SOC simulation engine initialized", "cyan");
+setTimeout(runSimulation, 1000);
+</script>
+
+</body>
+</html>

@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberDefense-X | SOC Incident Report</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="soc-report-page">
+
+    <aside class="report-sidebar">
+        <h2>🛡 CyberDefense-X</h2>
+        <p>SOC COMMAND CENTER</p>
+
+        <nav>
+            <a href="/">Dashboard</a>
+            <a href="/">Attack Simulation</a>
+            <a class="active" href="#">SOC Report</a>
+            <a href="#">Logs & Events</a>
+            <a href="#">Assets</a>
+        </nav>
+
+        <div class="system-alert">
+            <h4>● SYSTEM ALERT</h4>
+            <p>High severity attack detected</p>
+            <span>System under observation</span>
+        </div>
+    </aside>
+
+    <main class="report-main">
+
+        <header class="report-header">
+            <div>
+                <h1>SOC INCIDENT REPORT</h1>
+                <p>Reports › Incident Report › {{ attack.name }}</p>
+            </div>
+
+            <div class="report-meta">
+                <div>
+                    <span>REPORT ID</span>
+                    <strong>RPT-2026-04-0017</strong>
+                </div>
+                <div>
+                    <span>ANALYST</span>
+                    <strong>AI Engine v2.7</strong>
+                </div>
+            </div>
+
+            <a href="/" class="export-btn">Back Dashboard</a>
+        </header>
+
+        <section class="report-kpi-grid">
+            <div class="kpi-card red">
+                <span>OVERALL RISK SCORE</span>
+                <h2>{{ attack.score }}<small>/100</small></h2>
+                <p>{{ attack.risk }} Risk</p>
+                <div class="mini-wave"></div>
+            </div>
+
+            <div class="kpi-card cyan">
+                <span>ATTACK SUCCESS</span>
+                <h2>{{ attack.score - 8 }}%</h2>
+                <p>Confirmed</p>
+                <div class="mini-wave"></div>
+            </div>
+
+            <div class="kpi-card orange">
+                <span>COMPROMISED ASSETS</span>
+                <h2>{{ attack.compromised }}<small>/24</small></h2>
+                <p>Affected Nodes</p>
+                <div class="mini-wave"></div>
+            </div>
+
+            <div class="kpi-card blue">
+                <span>DATA EXFILTRATED</span>
+                <h2>2.38<small>GB</small></h2>
+                <p>Simulated</p>
+                <div class="mini-wave"></div>
+            </div>
+
+            <div class="kpi-card green">
+                <span>INCIDENT STATUS</span>
+                <h2>CONTAINED</h2>
+                <p>Active Response</p>
+                <div class="mini-wave"></div>
+            </div>
+        </section>
+
+        <section class="report-dashboard-grid">
+
+            <div class="panel attack-overview">
+                <h3>ATTACK OVERVIEW</h3>
+
+                <div class="info-row">
+                    <span>Attack Type</span>
+                    <strong>{{ attack.name }}</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Attack Vector</span>
+                    <strong>Payload → Network Node → SOC Alert</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Duration</span>
+                    <strong>00:08:14</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Target</span>
+                    <strong>Corporate Network</strong>
+                </div>
+
+                <div class="info-row">
+                    <span>Threat Actor</span>
+                    <strong>Simulated Red Team</strong>
+                </div>
+            </div>
+
+            <div class="panel realtime-map">
+                <div class="panel-title">
+                    <h3>REALTIME ATTACK MAP</h3>
+                    <span class="live-badge">● LIVE</span>
+                </div>
+
+                <div class="globe">
+                    <div class="globe-core"></div>
+
+                    <div class="ring ring1"></div>
+                    <div class="ring ring2"></div>
+                    <div class="ring ring3"></div>
+
+                    <div class="map-dot dot1"></div>
+                    <div class="map-dot dot2"></div>
+                    <div class="map-dot dot3"></div>
+                    <div class="map-dot dot4"></div>
+
+                    <div class="arc arc1"></div>
+                    <div class="arc arc2"></div>
+                    <div class="arc arc3"></div>
+                    <div class="arc arc4"></div>
+
+                    <h2>GLOBAL THREAT MAP</h2>
+                </div>
+
+                <div class="map-legend">
+                    <span class="red-dot"></span> Attacker
+                    <span class="orange-dot"></span> Compromised
+                    <span class="green-dot"></span> Target
+                    <span class="cyan-dot"></span> Normal
+                </div>
+            </div>
+
+            <div class="panel infected-assets">
+                <h3>TOP INFECTED ASSETS</h3>
+
+                <table>
+                    <tr>
+                        <th>Asset IP</th>
+                        <th>Asset Name</th>
+                        <th>Risk</th>
+                    </tr>
+                    <tr>
+                        <td>192.168.1.45</td>
+                        <td>WS-ACCT-12</td>
+                        <td><span class="tag critical-tag">CRITICAL</span></td>
+                    </tr>
+                    <tr>
+                        <td>192.168.1.23</td>
+                        <td>SRV-FILE-02</td>
+                        <td><span class="tag high-tag">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>192.168.1.89</td>
+                        <td>DB-PROD-01</td>
+                        <td><span class="tag high-tag">HIGH</span></td>
+                    </tr>
+                    <tr>
+                        <td>192.168.1.77</td>
+                        <td>WS-HR-07</td>
+                        <td><span class="tag medium-tag">MEDIUM</span></td>
+                    </tr>
+                </table>
+            </div>
+
+            <div class="panel timeline-panel">
+                <h3>ATTACK TIMELINE</h3>
+
+                <div class="timeline-item red-line">
+                    <span>10:12:44</span>
+                    <p>Initial access detected</p>
+                </div>
+
+                <div class="timeline-item orange-line">
+                    <span>10:13:21</span>
+                    <p>Payload execution started</p>
+                </div>
+
+                <div class="timeline-item orange-line">
+                    <span>10:15:48</span>
+                    <p>Lateral movement identified</p>
+                </div>
+
+                <div class="timeline-item yellow-line">
+                    <span>10:17:33</span>
+                    <p>Sensitive files discovered</p>
+                </div>
+
+                <div class="timeline-item green-line">
+                    <span>10:20:58</span>
+                    <p>Incident contained</p>
+                </div>
+            </div>
+
+            <div class="panel chart-panel">
+                <h3>ATTACK TRENDS</h3>
+
+                <div class="bar-chart">
+                    <span style="height: 40%"></span>
+                    <span style="height: 55%"></span>
+                    <span style="height: 35%"></span>
+                    <span style="height: 75%"></span>
+                    <span style="height: 60%"></span>
+                    <span style="height: 90%"></span>
+                    <span style="height: 50%"></span>
+                    <span style="height: 70%"></span>
+                    <span style="height: 45%"></span>
+                    <span style="height: 85%"></span>
+                    <span style="height: 65%"></span>
+                    <span style="height: 95%"></span>
+                </div>
+            </div>
+
+            <div class="panel donut-panel">
+                <h3>SEVERITY DISTRIBUTION</h3>
+
+                <div class="donut"></div>
+
+                <div class="severity-list">
+                    <p><span class="red-box"></span> Critical <strong>18.7%</strong></p>
+                    <p><span class="orange-box"></span> High <strong>34.2%</strong></p>
+                    <p><span class="yellow-box"></span> Medium <strong>28.6%</strong></p>
+                    <p><span class="green-box"></span> Low <strong>12.1%</strong></p>
+                </div>
+            </div>
+
+            <div class="panel actions-panel">
+                <h3>RECOMMENDED SOC ACTIONS</h3>
+
+                <ul>
+                    <li>✔ Isolate infected endpoints from network</li>
+                    <li>✔ Reset compromised user credentials</li>
+                    <li>✔ Run full malware scan on affected systems</li>
+                    <li>✔ Review firewall and IDS/IPS logs</li>
+                    <li>✔ Update detection rules and signatures</li>
+                </ul>
+            </div>
+
+            <div class="panel summary-panel">
+                <h3>INCIDENT SUMMARY</h3>
+
+                <p>{{ attack.status }}</p>
+
+                <div class="summary-stats">
+                    <div>
+                        <h2>{{ attack.compromised }}</h2>
+                        <span>Assets Compromised</span>
+                    </div>
+                    <div>
+                        <h2>7</h2>
+                        <span>Users Affected</span>
+                    </div>
+                    <div>
+                        <h2>2.38GB</h2>
+                        <span>Data Exfiltrated</span>
+                    </div>
+                </div>
+
+                <p class="contained">Status: ● Contained</p>
+            </div>
+
+        </section>
+
+    </main>
+
+</div>
+
+</body>
+</html>

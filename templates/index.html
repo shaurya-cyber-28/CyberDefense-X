@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>CyberDefense-X | SOC Command Center</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+
+<div class="app">
+
+    <aside class="sidebar">
+        <h2>CyberDefense-X</h2>
+        <p>SOC Simulator</p>
+
+        <nav>
+            <span class="active">Attack Lab</span>
+            <span>Threat Intel</span>
+            <span>Network Map</span>
+            <span>Reports</span>
+        </nav>
+    </aside>
+
+    <main class="main">
+
+        <header class="topbar">
+            <div>
+                <h1>Attack Simulation Center</h1>
+                <p>Select a cyber attack scenario for real-time SOC visualization.</p>
+            </div>
+
+            <div class="system-health">
+                <span class="pulse"></span>
+                SYSTEM ONLINE
+            </div>
+        </header>
+
+        <section class="metrics">
+            <div class="metric-card">
+                <span>Security Level</span>
+                <h3>DEFCON 3</h3>
+            </div>
+
+            <div class="metric-card">
+                <span>AI Detection</span>
+                <h3>ACTIVE</h3>
+            </div>
+
+            <div class="metric-card">
+                <span>Monitored Nodes</span>
+                <h3>24</h3>
+            </div>
+
+            <div class="metric-card danger">
+                <span>Threat Mode</span>
+                <h3>SIMULATION</h3>
+            </div>
+        </section>
+
+        <section class="content-grid">
+
+            <div class="attack-section">
+                <h2>Select Attack Vector</h2>
+
+                <div class="attack-grid">
+
+                    <div class="attack-card">
+                        <div class="card-top">
+                            <h3>DDoS Attack</h3>
+                            <span class="high">HIGH</span>
+                        </div>
+                        <p>Floods a target server with abnormal traffic to test availability defense.</p>
+                        <button onclick="startAttack('ddos')">Launch Simulation</button>
+                    </div>
+
+                    <div class="attack-card">
+                        <div class="card-top">
+                            <h3>Malware Injection</h3>
+                            <span class="critical">CRITICAL</span>
+                        </div>
+                        <p>Simulates malicious payload behavior inside an infected endpoint node.</p>
+                        <button onclick="startAttack('malware')">Launch Simulation</button>
+                    </div>
+
+                    <div class="attack-card">
+                        <div class="card-top">
+                            <h3>Phishing Attack</h3>
+                            <span class="medium">MEDIUM</span>
+                        </div>
+                        <p>Tests credential compromise workflow using a simulated phishing chain.</p>
+                        <button onclick="startAttack('phishing')">Launch Simulation</button>
+                    </div>
+
+                    <div class="attack-card">
+                        <div class="card-top">
+                            <h3>MITM Attack</h3>
+                            <span class="high">HIGH</span>
+                        </div>
+                        <p>Shows attacker interception between client and server communication channels.</p>
+                        <button onclick="startAttack('mitm')">Launch Simulation</button>
+                    </div>
+
+                </div>
+            </div>
+
+            <aside class="log-panel">
+                <h2>Live SOC Feed</h2>
+
+                <div class="log warning">[WARN] Suspicious traffic pattern detected</div>
+                <div class="log info">[INFO] AI detection engine initialized</div>
+                <div class="log danger">[ALERT] Malware signature database loaded</div>
+                <div class="log info">[INFO] Network topology scan completed</div>
+                <div class="log warning">[WARN] Simulation environment armed</div>
+            </aside>
+
+        </section>
+
+    </main>
+</div>
+
+<script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>

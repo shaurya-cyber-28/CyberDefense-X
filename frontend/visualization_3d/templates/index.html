@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>CyberDefense-X Replay Simulator</title>
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #02030a;
+            font-family: Arial, sans-serif;
+        }
+
+        #alertBox {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: white;
+            background: rgba(255, 80, 40, 0.85);
+            padding: 12px 18px;
+            border-radius: 14px;
+            font-size: 20px;
+            font-weight: bold;
+            z-index: 20;
+            box-shadow: 0 0 20px rgba(255, 80, 40, 0.9);
+        }
+
+        #timeBox {
+            position: absolute;
+            top: 78px;
+            left: 20px;
+            color: cyan;
+            font-size: 22px;
+            font-weight: bold;
+            z-index: 20;
+            text-shadow: 0 0 10px cyan;
+        }
+
+        #timelineSlider {
+            position: absolute;
+            top: 122px;
+            left: 20px;
+            width: 340px;
+            z-index: 20;
+        }
+
+        #titleBox {
+            position: absolute;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: cyan;
+            font-size: 22px;
+            font-weight: bold;
+            z-index: 20;
+            text-shadow: 0 0 12px cyan;
+        }
+
+        #scenarioSelect {
+            position: absolute;
+            bottom: 32px;
+            left: 20px;
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: cyan;
+            border: 1px solid cyan;
+            z-index: 20;
+            box-shadow: 0 0 15px cyan;
+        }
+
+        #startBtn, #pauseBtn, #resumeBtn, #resetBtn {
+            position: absolute;
+            bottom: 32px;
+            z-index: 20;
+            background: rgba(0, 255, 255, 0.85);
+            color: black;
+            border: none;
+            padding: 12px 22px;
+            border-radius: 12px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 0 18px cyan;
+        }
+
+        #startBtn { left: 200px; }
+        #pauseBtn { left: 360px; }
+        #resumeBtn { left: 490px; }
+        #resetBtn { left: 640px; }
+
+        #intelPanel {
+            position: absolute;
+            right: 20px;
+            top: 20px;
+            width: 300px;
+            background: rgba(0, 0, 0, 0.78);
+            border: 1px solid cyan;
+            border-radius: 14px;
+            padding: 16px;
+            color: cyan;
+            font-family: monospace;
+            z-index: 20;
+            box-shadow: 0 0 20px cyan;
+        }
+
+        #intelPanel h3 {
+            margin-top: 0;
+            text-align: center;
+        }
+
+        #logBox {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            width: 360px;
+            height: 220px;
+            overflow-y: auto;
+            background: rgba(0, 0, 0, 0.65);
+            color: white;
+            padding: 12px;
+            border-radius: 14px;
+            z-index: 20;
+            font-size: 14px;
+            box-shadow: 0 0 14px cyan;
+            border: 1px solid cyan;
+        }
+
+        .label {
+            position: absolute;
+            color: white;
+            font-size: 14px;
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 0 0 8px black;
+            z-index: 20;
+        }
+    </style>
+</head>
+<body>
+
+<div id="alertBox">Replay idle...</div>
+<div id="timeBox">Time: 0s</div>
+<input type="range" id="timelineSlider" min="0" max="10" value="0">
+
+<div id="titleBox">CyberDefense-X Attack Replay Simulator</div>
+
+<select id="scenarioSelect">
+    <option value="ddos">DDoS Attack</option>
+    <option value="malware">Malware Attack</option>
+    <option value="bruteforce">Brute Force</option>
+    <option value="portscan">Port Scan</option>
+</select>
+
+<button id="startBtn">Start Replay</button>
+<button id="pauseBtn">Pause</button>
+<button id="resumeBtn">Resume</button>
+<button id="resetBtn">Reset</button>
+
+<div id="intelPanel">
+    <h3>⚡ Attack Intelligence</h3>
+    <p>Type: <span id="intelType">-</span></p>
+    <p>Target: <span id="intelTarget">-</span></p>
+    <p>Severity: <span id="intelSeverity">-</span></p>
+    <p>Status: <span id="intelStatus">Idle</span></p>
+    <p>Packets: <span id="intelPackets">0</span></p>
+    <p>Progress: <span id="intelProgress">0%</span></p>
+    <p>Threat Level: <span id="intelThreat">LOW</span></p>
+    <p>AI Confidence: <span id="intelConfidence">0%</span></p>
+    <p>Risk Score: <span id="intelRisk">LOW</span></p>
+</div>
+
+<div id="logBox"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/three@0.152.2/build/three.min.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+
+<script>
+const socket = io();
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x02030a);
+
+const camera = new THREE.PerspectiveCamera(
+    75,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    1000
+);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setSize(window.innerWidth, window.innerHeight);
+document.body.appendChild(renderer.domElement);
+
+camera.position.set(0, 3, 18);
+camera.lookAt(0, 0, 0);
+
+const ambientLight = new THREE.AmbientLight(0x404040, 2);
+scene.add(ambientLight);
+
+const pointLight = new THREE.PointLight(0xffffff, 2.5);
+pointLight.position.set(0, 12, 10);
+scene.add(pointLight);
+
+const pointLight2 = new THREE.PointLight(0x00ffff, 1.2);
+pointLight2.position.set(-10, 4, 5);
+scene.add(pointLight2);
+
+const gridHelper = new THREE.GridHelper(40, 40, 0x00ffff, 0x003344);
+gridHelper.position.y = -5;
+scene.add(gridHelper);
+
+const positions = {
+    "Attacker": [-9, 0, 0],
+    "Router": [-3, 2, 0],
+    "Firewall": [1, -1.5, -2],
+    "Server": [6, 2, 0],
+    "Database": [9, -1, 2]
+};
+
+const colors = {
+    "Attacker": 0xff3333,
+    "Router": 0x00ffff,
+    "Firewall": 0xffaa00,
+    "Server": 0x33ff66,
+    "Database": 0x3388ff
+};
+
+const nodes = {};
+const labels = {};
+const edges = [];
+let activePackets = [];
+let packetCount = 0;
+let maxPackets = 20;
+let pulses = [];
+let bursts = [];
+
+function addLabel(name) {
+    const label = document.createElement("div");
+    label.className = "label";
+    label.innerText = name;
+    document.body.appendChild(label);
+    labels[name] = label;
+}
+
+function createGlowSphere(radius, color, opacity=0.15) {
+    const geo = new THREE.SphereGeometry(radius, 24, 24);
+    const mat = new THREE.MeshBasicMaterial({
+        color: color,
+        transparent: true,
+        opacity: opacity
+    });
+    return new THREE.Mesh(geo, mat);
+}
+
+function createAttacker(pos) {
+    const group = new THREE.Group();
+
+    const core = new THREE.Mesh(
+        new THREE.OctahedronGeometry(0.8),
+        new THREE.MeshStandardMaterial({
+            color: colors.Attacker,
+            emissive: colors.Attacker,
+            emissiveIntensity: 3,
+            metalness: 0.8,
+            roughness: 0.2
+        })
+    );
+    group.add(core);
+
+    const ring = new THREE.Mesh(
+        new THREE.TorusGeometry(1.1, 0.08, 16, 64),
+        new THREE.MeshBasicMaterial({ color: colors.Attacker })
+    );
+    ring.rotation.x = Math.PI / 2;
+    group.add(ring);
+
+    const glow = createGlowSphere(1.4, colors.Attacker, 0.12);
+    group.add(glow);
+
+    group.position.set(...pos);
+    group.userData = { type: "Attacker", core, ring, glow };
+    return group;
+}
+
+function createRouter(pos) {
+    const group = new THREE.Group();
+
+    const body = new THREE.Mesh(
+        new THREE.BoxGeometry(2.2, 1.1, 1.4),
+        new THREE.MeshStandardMaterial({
+            color: colors.Router,
+            emissive: colors.Router,
+            emissiveIntensity: 2.2,
+            metalness: 0.7,
+            roughness: 0.25
+        })
+    );
+    group.add(body);
+
+    for (let i = -0.6; i <= 0.6; i += 0.4) {
+        const port = new THREE.Mesh(
+            new THREE.BoxGeometry(0.18, 0.18, 0.05),
+            new THREE.MeshBasicMaterial({ color: 0xffffff })
+        );
+        port.position.set(i, -0.15, 0.73);
+        group.add(port);
+    }
+
+    const glow = createGlowSphere(1.6, colors.Router, 0.10);
+    group.add(glow);
+
+    group.position.set(...pos);
+    group.userData = { type: "Router", body, glow };
+    return group;
+}
+
+function createFirewall(pos) {
+    const group = new THREE.Group();
+
+    const wall = new THREE.Mesh(
+        new THREE.BoxGeometry(1.8, 2.2, 0.4),
+        new THREE.MeshStandardMaterial({
+            color: colors.Firewall,
+            emissive: colors.Firewall,
+            emissiveIntensity: 2.5,
+            metalness: 0.6,
+            roughness: 0.25,
+            transparent: true,
+            opacity: 0.95
+        })
+    );
+    group.add(wall);
+
+    const shield = new THREE.Mesh(
+        new THREE.SphereGeometry(1.4, 24, 24),
+        new THREE.MeshBasicMaterial({
+            color: colors.Firewall,
+            transparent: true,
+            opacity: 0.12,
+            wireframe: true
+        })
+    );
+    group.add(shield);
+
+    group.position.set(...pos);
+    group.userData = { type: "Firewall", wall, shield };
+    return group;
+}
+
+function createServer(pos) {
+    const group = new THREE.Group();
+
+    const tower = new THREE.Mesh(
+        new THREE.BoxGeometry(1.5, 2.8, 1.2),
+        new THREE.MeshStandardMaterial({
+            color: colors.Server,
+            emissive: colors.Server,
+            emissiveIntensity: 2.2,
+            metalness: 0.7,
+            roughness: 0.2
+        })
+    );
+    group.add(tower);
+
+    for (let i = 0.9; i >= -0.9; i -= 0.45) {
+        const light = new THREE.Mesh(
+            new THREE.BoxGeometry(0.9, 0.08, 0.05),
+            new THREE.MeshBasicMaterial({ color: 0x99ffcc })
+        );
+        light.position.set(0, i, 0.63);
+        group.add(light);
+    }
+
+    const glow = createGlowSphere(1.6, colors.Server, 0.10);
+    group.add(glow);
+
+    group.position.set(...pos);
+    group.userData = { type: "Server", tower, glow };
+    return group;
+}
+
+function createDatabase(pos) {
+    const group = new THREE.Group();
+
+    for (let i = 0; i < 3; i++) {
+        const disk = new THREE.Mesh(
+            new THREE.CylinderGeometry(0.9, 0.9, 0.35, 32),
+            new THREE.MeshStandardMaterial({
+                color: colors.Database,
+                emissive: colors.Database,
+                emissiveIntensity: 2.2,
+                metalness: 0.6,
+                roughness: 0.25
+            })
+        );
+        disk.position.y = i * 0.4 - 0.4;
+        group.add(disk);
+    }
+
+    const glow = createGlowSphere(1.5, colors.Database, 0.10);
+    group.add(glow);
+
+    group.position.set(...pos);
+    group.userData = { type: "Database", glow };
+    return group;
+}
+
+nodes["Attacker"] = createAttacker(positions["Attacker"]);
+nodes["Router"] = createRouter(positions["Router"]);
+nodes["Firewall"] = createFirewall(positions["Firewall"]);
+nodes["Server"] = createServer(positions["Server"]);
+nodes["Database"] = createDatabase(positions["Database"]);
+
+for (const name in nodes) {
+    scene.add(nodes[name]);
+    addLabel(name);
+}
+
+const edgeList = [
+    ["Attacker", "Router"],
+    ["Router", "Server"],
+    ["Router", "Firewall"],
+    ["Firewall", "Database"]
+];
+
+for (const [start, end] of edgeList) {
+    const points = [
+        new THREE.Vector3(...positions[start]),
+        new THREE.Vector3(...positions[end])
+    ];
+
+    const geometry = new THREE.BufferGeometry().setFromPoints(points);
+    const material = new THREE.LineBasicMaterial({
+        color: 0x00ffff,
+        linewidth: 2
+    });
+
+    const line = new THREE.Line(geometry, material);
+    scene.add(line);
+
+    edges.push({
+        start,
+        end,
+        line,
+        defaultColor: 0x00ffff
+    });
+}
+
+function addLog(message) {
+    const logBox = document.getElementById("logBox");
+    logBox.innerHTML += message + "<br>";
+    logBox.scrollTop = logBox.scrollHeight;
+}
+
+function resetEdges() {
+    for (const edge of edges) {
+        edge.line.material.color.setHex(edge.defaultColor);
+    }
+}
+
+function highlightEdge(start, end) {
+    for (const edge of edges) {
+        if (edge.start === start && edge.end === end) {
+            edge.line.material.color.setHex(0xff0000);
+        }
+    }
+}
+
+function spawnShieldPulse() {
+    const pulse = new THREE.Mesh(
+        new THREE.SphereGeometry(1.5, 24, 24),
+        new THREE.MeshBasicMaterial({
+            color: colors.Firewall,
+            transparent: true,
+            opacity: 0.35,
+            wireframe: true
+        })
+    );
+    pulse.position.copy(nodes["Firewall"].position);
+    scene.add(pulse);
+    pulses.push({ mesh: pulse, life: 0 });
+}
+
+function spawnBurst(nodeName, colorHex=0xff4444) {
+    const burst = new THREE.Mesh(
+        new THREE.SphereGeometry(0.3, 24, 24),
+        new THREE.MeshBasicMaterial({
+            color: colorHex,
+            transparent: true,
+            opacity: 0.6
+        })
+    );
+    burst.position.copy(nodes[nodeName].position);
+    scene.add(burst);
+    bursts.push({ mesh: burst, life: 0 });
+}
+
+function spawnPacket(startName, endName) {
+    const geometry = new THREE.SphereGeometry(0.2, 16, 16);
+    const material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+    const packet = new THREE.Mesh(geometry, material);
+
+    const start = new THREE.Vector3(...positions[startName]);
+    const end = new THREE.Vector3(...positions[endName]);
+
+    packet.position.copy(start);
+    scene.add(packet);
+
+    const trailGeometry = new THREE.BufferGeometry();
+    const trailMaterial = new THREE.LineBasicMaterial({
+        color: 0xffcc00,
+        transparent: true,
+        opacity: 0.7
+    });
+
+    const trailPoints = [start.clone()];
+    const trail = new THREE.Line(trailGeometry, trailMaterial);
+    scene.add(trail);
+
+    activePackets.push({
+        mesh: packet,
+        trail: trail,
+        trailPoints: trailPoints,
+        start: start,
+        end: end,
+        progress: 0
+    });
+}
+
+function updateLabels() {
+    for (const name in nodes) {
+        const pos = nodes[name].position.clone();
+        pos.project(camera);
+
+        const x = (pos.x * 0.5 + 0.5) * window.innerWidth;
+        const y = (-pos.y * 0.5 + 0.5) * window.innerHeight;
+
+        labels[name].style.left = `${x}px`;
+        labels[name].style.top = `${y}px`;
+    }
+}
+
+document.getElementById("startBtn").addEventListener("click", () => {
+    document.getElementById("alertBox").innerText = "Replay started...";
+    document.getElementById("logBox").innerHTML = "";
+    resetEdges();
+
+    const selectedScenario = document.getElementById("scenarioSelect").value;
+
+    socket.emit("start_replay", {
+        scenario: selectedScenario
+    });
+});
+
+document.getElementById("pauseBtn").addEventListener("click", () => {
+    socket.emit("pause_replay");
+});
+
+document.getElementById("resumeBtn").addEventListener("click", () => {
+    socket.emit("resume_replay");
+});
+
+document.getElementById("resetBtn").addEventListener("click", () => {
+    document.getElementById("logBox").innerHTML = "";
+    document.getElementById("alertBox").innerText = "Replay reset";
+    resetEdges();
+    socket.emit("reset_replay");
+});
+
+document.getElementById("timelineSlider").addEventListener("input", (e) => {
+    const newTime = parseInt(e.target.value);
+    document.getElementById("timeBox").innerText = `Time: ${newTime}s`;
+
+    socket.emit("seek_time", {
+        time: newTime
+    });
+});
+
+socket.on("replay_event", (event) => {
+    if (event.type === "packet_move") {
+        packetCount++;
+        document.getElementById("intelPackets").innerText = packetCount;
+
+        let progress = Math.min((packetCount / maxPackets) * 100, 100);
+        document.getElementById("intelProgress").innerText = `${progress.toFixed(0)}%`;
+
+        if (progress < 30) {
+            document.getElementById("intelThreat").innerText = "LOW";
+        } else if (progress < 70) {
+            document.getElementById("intelThreat").innerText = "MEDIUM";
+        } else {
+            document.getElementById("intelThreat").innerText = "HIGH";
+        }
+
+        document.getElementById("intelType").innerText = "Network Activity";
+        document.getElementById("intelTarget").innerText = event.to;
+        document.getElementById("intelSeverity").innerText = "Low";
+        document.getElementById("intelStatus").innerText = "Active";
+
+        addLog(`[PACKET] ${event.from} → ${event.to}`);
+        highlightEdge(event.from, event.to);
+        spawnPacket(event.from, event.to);
+
+        if (event.to === "Firewall") {
+            spawnShieldPulse();
+        }
+
+        if (event.to === "Server" || event.to === "Database") {
+            spawnBurst(event.to, 0xff4444);
+        }
+    }
+
+    else if (event.type === "alert") {
+        document.getElementById("intelType").innerText = "Security Alert";
+        document.getElementById("intelSeverity").innerText = "Medium";
+        document.getElementById("intelStatus").innerText = "Warning";
+
+        addLog(`[ALERT] ${event.message}`);
+        document.getElementById("alertBox").innerText = event.message;
+    }
+
+    else if (event.type === "ai_detect") {
+        const confidence = Math.floor(Math.random() * 40) + 60;
+
+        document.getElementById("intelType").innerText = "AI Detection";
+        document.getElementById("intelSeverity").innerText = "High";
+        document.getElementById("intelStatus").innerText = "Critical";
+        document.getElementById("intelConfidence").innerText = `${confidence}%`;
+
+        if (confidence < 70) {
+            document.getElementById("intelRisk").innerText = "LOW";
+        } else if (confidence < 85) {
+            document.getElementById("intelRisk").innerText = "MEDIUM";
+        } else {
+            document.getElementById("intelRisk").innerText = "HIGH";
+        }
+
+        addLog(`[AI IDS] ${event.message} (${confidence}%)`);
+        document.getElementById("alertBox").innerText = event.message;
+    }
+});
+
+socket.on("status_update", (data) => {
+    document.getElementById("alertBox").innerText = data.status;
+});
+
+socket.on("time_update", (data) => {
+    document.getElementById("timeBox").innerText = `Time: ${data.time}s`;
+    document.getElementById("timelineSlider").value = data.time;
+});
+
+socket.on("clear_visuals", () => {
+    resetEdges();
+
+    for (let i = activePackets.length - 1; i >= 0; i--) {
+        scene.remove(activePackets[i].mesh);
+        scene.remove(activePackets[i].trail);
+    }
+    activePackets.length = 0;
+
+    for (let i = pulses.length - 1; i >= 0; i--) {
+        scene.remove(pulses[i].mesh);
+    }
+    pulses.length = 0;
+
+    for (let i = bursts.length - 1; i >= 0; i--) {
+        scene.remove(bursts[i].mesh);
+    }
+    bursts.length = 0;
+
+    packetCount = 0;
+
+    document.getElementById("intelPackets").innerText = 0;
+    document.getElementById("intelType").innerText = "-";
+    document.getElementById("intelTarget").innerText = "-";
+    document.getElementById("intelSeverity").innerText = "-";
+    document.getElementById("intelStatus").innerText = "Idle";
+    document.getElementById("intelProgress").innerText = "0%";
+    document.getElementById("intelThreat").innerText = "LOW";
+    document.getElementById("intelConfidence").innerText = "0%";
+    document.getElementById("intelRisk").innerText = "LOW";
+});
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    const t = Date.now() * 0.0003;
+    camera.position.x = Math.sin(t) * 4;
+    camera.position.z = 15 + Math.cos(t) * 3;
+    camera.position.y = 2 + Math.sin(t * 0.5) * 1.5;
+    camera.lookAt(0, 0, 0);
+
+    nodes["Attacker"].userData.ring.rotation.z += 0.02;
+    nodes["Attacker"].userData.core.rotation.x += 0.01;
+    nodes["Attacker"].userData.core.rotation.y += 0.015;
+    nodes["Firewall"].userData.shield.rotation.y += 0.01;
+
+    for (const name in nodes) {
+        const scale = 1 + 0.04 * Math.sin(Date.now() * 0.003 + Object.keys(nodes).indexOf(name));
+        nodes[name].scale.set(scale, scale, scale);
+    }
+
+    for (let i = activePackets.length - 1; i >= 0; i--) {
+        const packet = activePackets[i];
+        packet.progress += 0.02;
+
+        packet.mesh.position.lerpVectors(
+            packet.start,
+            packet.end,
+            packet.progress
+        );
+
+        packet.trailPoints.push(packet.mesh.position.clone());
+
+        if (packet.trailPoints.length > 20) {
+            packet.trailPoints.shift();
+        }
+
+        packet.trail.geometry.setFromPoints(packet.trailPoints);
+
+        if (packet.progress >= 1) {
+            scene.remove(packet.mesh);
+            scene.remove(packet.trail);
+            activePackets.splice(i, 1);
+        }
+    }
+
+    for (let i = pulses.length - 1; i >= 0; i--) {
+        const pulse = pulses[i];
+        pulse.life += 0.04;
+        pulse.mesh.scale.setScalar(1 + pulse.life * 2.2);
+        pulse.mesh.material.opacity = Math.max(0, 0.35 - pulse.life * 0.35);
+
+        if (pulse.life >= 1) {
+            scene.remove(pulse.mesh);
+            pulses.splice(i, 1);
+        }
+    }
+
+    for (let i = bursts.length - 1; i >= 0; i--) {
+        const burst = bursts[i];
+        burst.life += 0.05;
+        burst.mesh.scale.setScalar(1 + burst.life * 4);
+        burst.mesh.material.opacity = Math.max(0, 0.6 - burst.life * 0.6);
+
+        if (burst.life >= 1) {
+            scene.remove(burst.mesh);
+            bursts.splice(i, 1);
+        }
+    }
+
+    updateLabels();
+    renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener("resize", () => {
+    camera.aspect = window.innerWidth / window.innerHeight;
+    camera.updateProjectionMatrix();
+    renderer.setSize(window.innerWidth, window.innerHeight);
+});
+</script>
+</body>
+</html>
